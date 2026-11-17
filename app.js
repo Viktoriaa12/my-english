@@ -172,6 +172,9 @@ function form(title,F,v,ok,del){
     }
    };
   }
+
+
+ $('#save-form').onclick=()=>{
   const d={};
 
   F.forEach(f=>{
