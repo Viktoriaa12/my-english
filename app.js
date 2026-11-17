@@ -161,7 +161,7 @@ function form(title,F,v,ok,del){
    button.textContent='✨ Генерую...';
 
    try{
-    const response=await fetch('/.netlify/functions/ai',{
+    const response=await fetch('https://friendly-muffin-6bf19e.netlify.app/.netlify/functions/ai',{
      method:'POST',
      headers:{'Content-Type':'application/json'},
      body:JSON.stringify({type:aiType,text:word})
