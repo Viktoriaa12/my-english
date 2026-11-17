@@ -19,39 +19,25 @@ function back(){if(st.note){sv();const n=db.items.find(i=>i.id==st.note);if(n&&!
 
 let viewportHandler=null;
 
-function sheet(h,extraClass=''){
+function sheet(h){
  close();
  const o=document.createElement('div');
  o.className='ov';
- o.innerHTML=`<div class="sh ${extraClass}"><i class=grab></i>${h}</div>`;
- o.onclick=e=>{if(e.target===o)close()};
+ o.innerHTML='<div class=sh><i class=grab></i>'+h+'</div>';
+ o.onclick=e=>{if(e.target==o)close()};
  document.body.appendChild(o);
 
- const sh=o.querySelector('.sh');
- const vv=window.visualViewport;
-
- const adjust=()=>{
-  if(!vv)return;
-  const keyboardOpen=window.innerHeight-vv.height-vv.offsetTop>100;
-  if(keyboardOpen){
-   o.style.top=vv.offsetTop+'px';
-   o.style.height=vv.height+'px';
-   o.style.bottom='auto';
-   o.classList.add('keyboard-open');
-  }else{
-   o.style.top='0';
-   o.style.height='100%';
-   o.style.bottom='auto';
-   o.classList.remove('keyboard-open');
-  }
+ const resize=()=>{
+  const v=window.visualViewport;
+  if(!v)return;
+  o.style.top=v.offsetTop+'px';
+  o.style.height=v.height+'px';
  };
 
- if(vv){
-  viewportHandler=adjust;
-  vv.addEventListener('resize',viewportHandler);
-  vv.addEventListener('scroll',viewportHandler);
-  adjust();
- }
+ resize();
+ window.visualViewport?.addEventListener('resize',resize);
+ window.visualViewport?.addEventListener('scroll',resize);
+ o._resize=resize;
 }
 
 function close(){
