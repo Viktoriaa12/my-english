@@ -100,7 +100,7 @@ function form(title,F,v,ok,del){
               F.some(f=>f.k==='n')?'phrase':null;
 
  sheet(`<h2>${title}</h2><div class=fields>${h}
-   ${aiType?'<button type=button class="btn ghost" id=ai-fill>✨ Заповнити за допомогою ШІ</button>':''}
+   ${aiType?'<button type=button class="btn ghost" id=ai-fill>Знайти значення ♡</button>':''}
    <button type=button class=btn id=save-form>Зберегти</button>
    ${del?'<button type=button class="btn ghost danger" id=del>Видалити</button>':''}
   </div>${emojiScreen}`,title.toLowerCase().includes('фраз')?'phrase-sheet':'');
@@ -158,7 +158,7 @@ function form(title,F,v,ok,del){
    }
 
    button.disabled=true;
-   button.textContent='✨ Генерую...';
+   button.textContent='Пошук...';
 
    try{
     const response=await fetch('https://friendly-muffin-6bf19e.netlify.app/.netlify/functions/ai',{
