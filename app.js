@@ -18,15 +18,50 @@ function back(){if(st.note){sv();const n=db.items.find(i=>i.id==st.note);if(n&&!
 /* sheets & forms */
 function sheet(h){close();const o=document.createElement('div');o.className='ov';o.innerHTML='<div class=sh><i class=grab></i>'+h+'</div>';o.onclick=e=>{if(e.target==o)close()};document.body.appendChild(o)}
 function close(){document.querySelectorAll('.ov').forEach(o=>o.remove())}
+
 function form(title,F,v,ok,del){
  const h=F.map(f=>{const x=v[f.k]!=null?v[f.k]:(f.d||'');
   if(f.t=='icons'||f.t=='cols')return `<div class=lb>${f.l}</div><div class="pick ${f.t}" data-k="${f.k}">${f.o.map(o=>`<button type=button data-v="${esc(o)}" class="${o==x?'sel':''}" ${f.t=='cols'?`style="background:${o}"`:''}>${f.t=='icons'?o:''}</button>`).join('')}</div><input type=hidden name="${f.k}" value="${esc(x)}">`;
-    return `<label class=lb>${f.l}${f.req?'':' <em>(необов’язково)</em>'}${f.t=='area'?`<textarea name="${f.k}" rows=3 autocomplete="new-password" autocorrect="on" autocapitalize="words" spellcheck="true">${esc(x)}</textarea>`:`<input type="text" name="${f.k==='name'?'entry-title':f.k}" value="${esc(x)}" ${f.req?'required':''} autocomplete="off" autocorrect="on" autocapitalize="words" spellcheck="true" inputmode="text">`}</label>`}).join('');
- sheet(`<h2>${title}</h2><form>${h}<button class=btn>Зберегти</button>${del?'<button type=button class="btn ghost danger" id=del>Видалити</button>':''}</form>`);
- const fm=$('.sh form');
- fm.onclick=e=>{const b=e.target.closest('.pick button');if(!b)return;const p=b.parentNode;p.querySelectorAll('button').forEach(z=>z.classList.remove('sel'));b.classList.add('sel');fm.elements[p.dataset.k].value=b.dataset.v};
- fm.onsubmit=e=>{e.preventDefault();const d={};F.forEach(f=>d[f.k]=fm.elements[f.k==='name'?'entry-title':f.k].value.trim());if(F.some(f=>f.req&&!d[f.k]))return;ok(d);save();close();render()};
- if(del)$('#del').onclick=()=>{if(confirm('Видалити? Разом із вмістом. Це не можна скасувати.')){del();save();close();render()}}}
+  return `<label class=lb>${f.l}${f.req?'':' <em>(необов’язково)</em>'}${f.t=='area'?`<textarea name="${f.k}" rows=3>${esc(x)}</textarea>`:`<input type="text" name="${f.k==='name'?'entry-title':f.k}" value="${esc(x)}" ${f.req?'required':''} autocomplete="off" autocorrect="on" autocapitalize="words" spellcheck="true" inputmode="text">`}</label>`}).join('');
+
+ sheet(`<h2>${title}</h2><div class="fields">${h}<button type="button" class="btn" id="save-form">Зберегти</button>${del?'<button type=button class="btn ghost danger" id=del>Видалити</button>':''}</div>`);
+
+ const fm=$('.sh .fields');
+
+ fm.onclick=e=>{
+  const b=e.target.closest('.pick button');
+  if(!b)return;
+  const p=b.parentNode;
+  p.querySelectorAll('button').forEach(z=>z.classList.remove('sel'));
+  b.classList.add('sel');
+  const input=fm.querySelector(`[name="${p.dataset.k}"]`);
+  if(input)input.value=b.dataset.v;
+ };
+
+ $('#save-form').onclick=()=>{
+  const d={};
+  F.forEach(f=>{
+   const key=f.k==='name'?'entry-title':f.k;
+   const input=fm.querySelector(`[name="${key}"]`);
+   d[f.k]=input?input.value.trim():'';
+  });
+  if(F.some(f=>f.req&&!d[f.k]))return;
+  ok(d);
+  save();
+  close();
+  render();
+ };
+
+ if(del)$('#del').onclick=()=>{
+  if(confirm('Видалити? Разом із вмістом. Це не можна скасувати.')){
+   del();
+   save();
+   close();
+   render();
+  }
+ };
+}
+
 function colForm(id){const c=id&&db.cols.find(x=>x.id==id);
  form(c?'Редагувати колекцію':'Нова колекція',[{k:'name',l:'Назва',req:1},{k:'icon',l:'Іконка',t:'icons',o:ICONS,d:'✧'},{k:'color',l:'Колір',t:'cols',o:COLS,d:COLS[0]}],c||{},
  d=>{c?Object.assign(c,d):db.cols.push({id:uid(),...d,createdAt:Date.now()})},
