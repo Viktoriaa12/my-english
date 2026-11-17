@@ -60,22 +60,18 @@ input,textarea{width:100%;font-size:16px;border:1px solid var(--ln);background:v
  inset:0;
  background:rgba(41,40,35,.3);
  display:flex;
- align-items:flex-start;
- justify-content:center;
+ align-items:flex-end;
  z-index:10;
- overflow:hidden;
 }
 
 .sh{
  width:100%;
  max-width:560px;
- max-height:calc(100% - 12px);
- margin:6px auto 0;
+ margin:0 auto;
+ max-height:90%;
  overflow-y:auto;
- -webkit-overflow-scrolling:touch;
- overscroll-behavior:contain;
  background:var(--sf);
- border-radius:24px;
+ border-radius:24px 24px 0 0;
  padding:10px 20px calc(22px + env(safe-area-inset-bottom));
  animation:up .22s ease-out;
 }
