@@ -37,14 +37,21 @@ export default async (request) => {
     }
 
     const prompt = type === "word"
-      ? `You are an English-Ukrainian dictionary.
+     ? `You are an English-Ukrainian dictionary for B2-level English learners.
+
 For the English word "${text}", return:
-Ukrainian translation, IPA transcription,
-two natural English example sentences and
-their Ukrainian translations.
-Return ONLY valid JSON with keys:
-translation, ipa, example, exampleTranslation.`
-      : `Translate the English phrase "${text}" into natural Ukrainian.
+- 2 to 4 of the most common and relevant Ukrainian translations.
+- IPA transcription.
+- Exactly ONE natural English example sentence at B2 level.
+
+The translations must be concise and separated by semicolons in one string.
+The example must demonstrate a natural, useful context for the word.
+Do not translate the example into Ukrainian.
+Do not include explanations or extra information.
+
+Return ONLY valid JSON with exactly these keys:
+translation, ipa, example.`
+  : `Translate the English phrase "${text}" into natural Ukrainian.
 Return ONLY valid JSON with key: translation.`;
 
     const response = await fetch(
