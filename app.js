@@ -35,21 +35,25 @@ function sheet(h){
   o.style.height=v.height+'px';
  };
 
- resize();
- window.visualViewport?.addEventListener('resize',resize);
- window.visualViewport?.addEventListener('scroll',resize);
- o._resize=resize;
+ resize/* sheets & forms */
+
+function sheet(h,extraClass=''){
+ close();
+
+ const o=document.createElement('div');
+ o.className='ov';
+ o.innerHTML='<div class="sh '+extraClass+'"><i class=grab></i>'+h+'</div>';
+
+ o.onclick=e=>{
+  if(e.target===o)close();
+ };
+
+ document.body.appendChild(o);
 }
 
 function close(){
  document.querySelectorAll('.ov').forEach(o=>o.remove());
- if(window.visualViewport&&viewportHandler){
-  window.visualViewport.removeEventListener('resize',viewportHandler);
-  window.visualViewport.removeEventListener('scroll',viewportHandler);
- }
- viewportHandler=null;
 }
-
 
 
 function form(title,F,v,ok,del){
