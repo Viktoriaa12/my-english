@@ -2,7 +2,7 @@
 const $=s=>document.querySelector(s),K='myenglish.v1';
 let db;try{db=JSON.parse(localStorage.getItem(K))}catch(e){}
 if(!db||!Array.isArray(db.cols))db={cols:[],subs:[],items:[]};
-const save=()=>{try{localStorage.setItem(K,JSON.stringify(db))}catch(e){alert('Не вдалося зберегти дані. Перевірте вільне місце.')}};
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(db))}catch(e){alert('Could not save data. Check available storage.')}};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const hl=(s,q)=>{s=String(s||'');const re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');return s.split(re).map((p,i)=>i%2?'<mark>'+esc(p)+'</mark>':esc(p)).join('')};
@@ -63,7 +63,7 @@ function form(title,F,v,ok,del){
    <div class=icon-choice>
     <button type=button class=emoji-trigger>
      <span class=chosen-emoji>${esc(x)}</span>
-     <span>Обрати іконку</span>
+     <span>Choose an icon</span>
      <span class=emoji-arrow>›</span>
     </button>
    </div>
@@ -78,7 +78,7 @@ function form(title,F,v,ok,del){
    <input type=hidden name="${f.k}" value="${esc(x)}">`;
   }
 
-  return `<label class=lb>${f.l}${f.req?'':' <em>(необов’язково)</em>'}
+  return `<label class=lb>${f.l}
    ${f.t==='area'
     ?`<textarea name="${f.k}" rows=3>${esc(x)}</textarea>`
     :`<input type=text name="${f.k==='name'?'entry-title':f.k}" value="${esc(x)}" ${f.req?'required':''} autocomplete=off autocorrect=on autocapitalize=words spellcheck=true inputmode=text>`}
@@ -88,8 +88,8 @@ function form(title,F,v,ok,del){
  const emojiScreen=`
  <div class=emoji-screen hidden>
   <div class=emoji-head>
-   <button type=button class=emoji-back>‹ Назад</button>
-   <b>Обрати іконку</b>
+   <button type=button class=emoji-back>‹ Back</button>
+   <b>Choose an icon</b>
   </div>
   <div class=emoji-grid>
    ${ICONS.map(o=>`<button type=button class=emoji-option data-emoji="${esc(o)}">${o}</button>`).join('')}
@@ -100,10 +100,10 @@ function form(title,F,v,ok,del){
               F.some(f=>f.k==='n')?'phrase':null;
 
  sheet(`<h2>${title}</h2><div class=fields>${h}
-   ${aiType?'<button type=button class="btn ghost" id=ai-fill>Знайти значення ♡</button>':''}
-   <button type=button class=btn id=save-form>Зберегти</button>
-   ${del?'<button type=button class="btn ghost danger" id=del>Видалити</button>':''}
-  </div>${emojiScreen}`,title.toLowerCase().includes('фраз')?'phrase-sheet':'');
+   ${aiType?'<button type=button class="btn ghost" id=ai-fill>✨ Generate with AI</button>':''}
+   <button type=button class=btn id=save-form>Save</button>
+   ${del?'<button type=button class="btn ghost danger" id=del>Delete</button>':''}
+  </div>${emojiScreen}`,title.toLowerCase().includes('phrase')?'phrase-sheet':'');
 
  const sh=$('.sh');
  const fm=sh.querySelector('.fields');
@@ -158,7 +158,7 @@ function form(title,F,v,ok,del){
    }
 
    button.disabled=true;
-   button.textContent='Пошук...';
+   button.textContent='Generating...';
 
    try{
     const response=await fetch('https://friendly-muffin-6bf19e.netlify.app/.netlify/functions/ai',{
@@ -168,7 +168,7 @@ function form(title,F,v,ok,del){
     });
 
     const data=await response.json();
-    if(!response.ok)throw new Error(data.error||'Помилка');
+    if(!response.ok)throw new Error(data.error||'Something went wrong');
 
     const set=(name,value)=>{
      const field=fm.querySelector(`[name="${name}"]`);
@@ -183,10 +183,10 @@ function form(title,F,v,ok,del){
      set('et',data.exampleTranslation);
     }
    }catch(error){
-    alert(error.message||'Не вдалося отримати відповідь від ШІ');
+    alert(error.message||'Could not get an AI response. Please try again.');
    }finally{
     button.disabled=false;
-    button.textContent='✨ Заповнити за допомогою ШІ';
+    button.textContent='✨ Generate with AI';
    }
   };
  }
@@ -209,7 +209,7 @@ function form(title,F,v,ok,del){
  };
 
  if(del)$('#del').onclick=()=>{
-  if(confirm('Видалити? Разом із вмістом. Це не можна скасувати.')){
+  if(confirm('Delete? All its contents will also be deleted. This action cannot be undone.')){
    del();
    save();
    close();
@@ -220,10 +220,10 @@ function form(title,F,v,ok,del){
 
 function colForm(id){
  const c=id&&db.cols.find(x=>x.id==id);
- form(c?'Редагувати колекцію':'Нова колекція',[
-  {k:'name',l:'Назва',req:1},
-  {k:'icon',l:'Іконка',t:'icons',o:ICONS,d:'✧'},
-  {k:'color',l:'Колір',t:'cols',o:COLS,d:COLS[0]}
+ form(c?'Edit collection':'New collection',[
+  {k:'name',l:'Name',req:1},
+  {k:'icon',l:'Icon',t:'icons',o:ICONS,d:'✧'},
+  {k:'color',l:'Color',t:'cols',o:COLS,d:COLS[0]}
  ],c||{},
  d=>{c?Object.assign(c,d):db.cols.push({id:uid(),...d,createdAt:Date.now()})},
  c&&(()=>{
@@ -237,8 +237,8 @@ function colForm(id){
 
 function subForm(id){
  const s=id&&db.subs.find(x=>x.id==id);
- form(s?'Перейменувати підкатегорію':'Нова підкатегорія',[
-  {k:'name',l:'Назва',req:1}
+ form(s?'Rename subcategory':'New subcategory',[
+  {k:'name',l:'Name',req:1}
  ],s||{},
  d=>{s?s.name=d.name:db.subs.push({id:uid(),col:st.col,parentId:st.sub||null,name:d.name,createdAt:Date.now()})},
  s&&(()=>{
@@ -253,17 +253,17 @@ function subForm(id){
 function itemForm(type,id){
  const i=id&&db.items.find(x=>x.id==id),w=type=='word';
  const F=w?[
-  {k:'t',l:'Слово',req:1},
-  {k:'ipa',l:'Вимова / IPA'},
-  {k:'m',l:'Значення / переклад'},
-  {k:'ex',l:'Приклад речення',t:'area'}
+  {k:'t',l:'Word',req:1},
+  {k:'ipa',l:'Pronunciation / IPA'},
+  {k:'m',l:'Meaning / Translation'},
+  {k:'ex',l:'Example sentence',t:'area'}
  ]:[
-  {k:'t',l:'Фраза',req:1},
-  {k:'m',l:'Переклад'},
-  {k:'n',l:'Додаткова примітка',t:'area'}
+  {k:'t',l:'Phrase',req:1},
+  {k:'m',l:'Translation'},
+  {k:'n',l:'Additional note',t:'area'}
  ];
 
- form(i?(w?'Редагувати слово':'Редагувати фразу'):(w?'Нове слово':'Нова фраза'),F,i||{},
+ form(i?(w?'Edit word':'Edit phrase'):(w?'New word':'New phrase'),F,i||{},
  d=>{
   const n=Date.now();
   i?Object.assign(i,d,{updatedAt:n}):db.items.push({
@@ -290,15 +290,15 @@ function fav(id){
 
 function plus(){
  const o=st.col?[
-  ['▤','Додати підкатегорію',()=>subForm()],
-  ['Aa','Додати слово',()=>itemForm('word')],
-  ['❝','Додати фразу',()=>itemForm('phrase')],
-  ['✎','Створити нотатку',newNote]
+  ['▤','Add subcategory',()=>subForm()],
+  ['Aa','Add word',()=>itemForm('word')],
+  ['❝','Add phrase',()=>itemForm('phrase')],
+  ['✎','Create note',newNote]
  ]:[
-  ['❖','Додати колекцію',()=>colForm()]
+  ['❖','Add collection',()=>colForm()]
  ];
 
- sheet('<h2>Додати</h2>'+o.map((x,i)=>`<button class=opt data-i=${i}><span>${x[0]}</span>${x[1]}</button>`).join(''));
+ sheet('<h2>Add new</h2>'+o.map((x,i)=>`<button class=opt data-i=${i}><span>${x[0]}</span>${x[1]}</button>`).join(''));
 
  $('.sh').onclick=e=>{
   const b=e.target.closest('.opt');
@@ -312,7 +312,7 @@ function plus(){
 /* views */
 
 function homeView(A){
- A.innerHTML=`<header class=top><h1>My English</h1><button class=ic aria-label="Налаштування" onclick="settings()">⚙︎</button></header><input id=q class=search type=search placeholder="Пошук слів, фраз і нотаток" value="${esc(st.q)}"><div id=res></div>`;
+ A.innerHTML=`<header class=top><h1>My English</h1><button class=ic aria-label="Settings" onclick="settings()">⚙︎</button></header><input id=q class=search type=search placeholder="Search words, phrases, and notes" value="${esc(st.q)}"><div id=res></div>`;
  $('#q').oninput=e=>{st.q=e.target.value;res()};
  res();
 }
@@ -321,7 +321,7 @@ function res(){
  const R=$('#res'),q=st.q.trim();
 
  if(!q){
-  R.innerHTML=db.cols.length?`<div class=grid>${db.cols.map(c=>`<div class=cc style="background:${c.color}" onclick="go('${c.id}')"><div class=ci>${c.icon}</div><div><b>${esc(c.name)}</b><small>Записів: ${cnt(c.id)}</small></div></div>`).join('')}</div>`:empty('📖','Зошит ще порожній','Натисніть +, щоб створити першу колекцію.');
+  R.innerHTML=db.cols.length?`<div class=grid>${db.cols.map(c=>`<div class=cc style="background:${c.color}" onclick="go('${c.id}')"><div class=ci>${c.icon}</div><div><b>${esc(c.name)}</b><small>Entries: ${cnt(c.id)}</small></div></div>`).join('')}</div>`:empty('📖','Your notebook is empty','Tap + to create your first collection.');
   return;
  }
 
@@ -330,14 +330,14 @@ function res(){
   const hd=x.k!=last?`<div class=sec>${x.k}</div>`:'';
   last=x.k;
   return hd+`<div class=res onclick="go('${x.c}','${x.s||''}','${x.n||''}')"><b>${hl(x.t,q)}</b>${x.sn?`<small>${hl(x.sn,q)}</small>`:''}</div>`;
- }).join(''):empty('🔍','Нічого не знайдено','Спробуйте інше слово.');
+ }).join(''):empty('🔍','Nothing found','Try another word.');
 }
 
 function srch(q){
  const l=q.toLowerCase(),m=s=>String(s||'').toLowerCase().includes(l),r=[];
 
- db.cols.forEach(c=>m(c.name)&&r.push({g:0,k:'Колекції',t:c.name,c:c.id}));
- db.subs.forEach(s=>m(s.name)&&r.push({g:1,k:'Підкатегорії',t:s.name,c:s.col,s:s.id}));
+ db.cols.forEach(c=>m(c.name)&&r.push({g:0,k:'Collections',t:c.name,c:c.id}));
+ db.subs.forEach(s=>m(s.name)&&r.push({g:1,k:'Subcategories',t:s.name,c:s.col,s:s.id}));
 
  db.items.forEach(i=>{
   const f=i.type=='note'?[i.t,i.c]:i.type=='word'?[i.t,i.ipa,i.m,i.ex,i.et]:[i.t,i.m,i.n],h=f.find(m);
@@ -347,8 +347,8 @@ function srch(q){
 
   r.push({
    g:{word:2,phrase:3,note:4}[i.type],
-   k:{word:'Слова',phrase:'Фрази',note:'Нотатки'}[i.type],
-   t:i.t||'Без назви',sn,c:i.col,s:i.sub,n:i.type=='note'?i.id:''
+   k:{word:'Words',phrase:'Phrases',note:'Notes'}[i.type],
+   t:i.t||'Untitled',sn,c:i.col,s:i.sub,n:i.type=='note'?i.id:''
   });
  });
 
@@ -356,10 +356,10 @@ function srch(q){
 }
 
 const card=i=>i.type=='word'
- ?`<div class=card onclick="edit('${i.id}')"><div class=wh><b>${esc(i.t)}</b>${i.ipa?`<span class=ipa>${esc(/^[\/\[].*[\/\]]$/.test(i.ipa)?i.ipa:'/'+i.ipa+'/')}</span>`:''}<button class="star ${i.fav?'on':''}" aria-label="Обране" onclick="event.stopPropagation();fav('${i.id}')">${i.fav?'★':'☆'}</button></div>${i.m?`<div class=wm>${esc(i.m)}</div>`:''}${i.ex?`<div class=ex>${esc(i.ex)}${i.et?`<small>${esc(i.et)}</small>`:''}</div>`:''}</div>`
+ ?`<div class=card onclick="edit('${i.id}')"><div class=wh><b>${esc(i.t)}</b>${i.ipa?`<span class=ipa>${esc(/^[\/\[].*[\/\]]$/.test(i.ipa)?i.ipa:'/'+i.ipa+'/')}</span>`:''}<button class="star ${i.fav?'on':''}" aria-label="Favorites" onclick="event.stopPropagation();fav('${i.id}')">${i.fav?'★':'☆'}</button></div>${i.m?`<div class=wm>${esc(i.m)}</div>`:''}${i.ex?`<div class=ex>${esc(i.ex)}${i.et?`<small>${esc(i.et)}</small>`:''}</div>`:''}</div>`
  :i.type=='phrase'
  ?`<div class="card ph" onclick="edit('${i.id}')"><div class=pt>${esc(i.t)}</div>${i.m?`<div class=wm>${esc(i.m)}</div>`:''}${i.n?`<div class=pn>${esc(i.n)}</div>`:''}</div>`
- :`<div class="card nn" onclick="edit('${i.id}')"><b>✎ ${esc(i.t||'Без назви')}</b><p>${esc((i.c||'').slice(0,160))}</p></div>`;
+ :`<div class="card nn" onclick="edit('${i.id}')"><b>✎ ${esc(i.t||'Untitled')}</b><p>${esc((i.c||'').slice(0,160))}</p></div>`;
 
 function colView(A){
  const c=db.cols.find(x=>x.id==st.col);
@@ -372,11 +372,11 @@ function colView(A){
  const subs=db.subs.filter(s=>s.col===c.id&&(s.parentId||null)===sid);
  const its=db.items.filter(i=>i.col===c.id&&(i.sub||null)===sid).sort((a,b)=>b.createdAt-a.createdAt);
 
- A.innerHTML=`<header class=top><button class=back onclick="back()">‹ ${esc(sub?(par?par.name:c.name):'Колекції')}</button><button class=ic aria-label="Змінити" onclick="${sub?`subForm('${sub.id}')`:`colForm('${c.id}')`}">⋯</button></header>
+ A.innerHTML=`<header class=top><button class=back onclick="back()">‹ ${esc(sub?(par?par.name:c.name):'Collections')}</button><button class=ic aria-label="Edit" onclick="${sub?`subForm('${sub.id}')`:`colForm('${c.id}')`}">⋯</button></header>
 <div class=ttl><span>${sub?'▤':c.icon}</span><h1>${esc(sub?sub.name:c.name)}</h1></div>
-${subs.length?'<div class=sec>Підкатегорії</div>'+subs.map(s=>`<div class=sub onclick="go('${c.id}','${s.id}')"><div class=sx><b>${esc(s.name)}</b><small>Записів: ${cnt(c.id,s.id)}</small></div><button class=dots onclick="event.stopPropagation();subForm('${s.id}')">⋯</button><i>›</i></div>`).join(''):''}
-${its.length?'<div class=sec>Записи</div>'+its.map(card).join(''):''}
-${subs.length||its.length?'':empty('🌿','Тут поки порожньо','Натисніть +, щоб додати слово, фразу, нотатку чи підкатегорію.')}`;
+${subs.length?'<div class=sec>Subcategories</div>'+subs.map(s=>`<div class=sub onclick="go('${c.id}','${s.id}')"><div class=sx><b>${esc(s.name)}</b><small>Entries: ${cnt(c.id,s.id)}</small></div><button class=dots onclick="event.stopPropagation();subForm('${s.id}')">⋯</button><i>›</i></div>`).join(''):''}
+${its.length?'<div class=sec>Entries</div>'+its.map(card).join(''):''}
+${subs.length||its.length?'':empty('🌿','Nothing here yet','Tap + to add a word, phrase, note, or subcategory.')}`;
 }
 
 /* notes */
@@ -394,7 +394,7 @@ function sv(){
  const n=db.items.find(i=>i.id==st.note),t=$('#nt');
  if(!n||!t)return;
  n.t=t.value;n.c=$('#nc').value;n.updatedAt=Date.now();save();
- $('#ss').textContent='Збережено';
+ $('#ss').textContent='Saved';
 }
 
 const grow=()=>{
@@ -407,10 +407,10 @@ function noteView(A){
  const n=db.items.find(i=>i.id==st.note);
  if(!n){st.note=null;return render()}
 
- A.innerHTML=`<header class=top><button class=back onclick="back()">‹ Назад</button><span id=ss class=ss>Збережено</span><button class=pill onclick="sv()">Зберегти</button><button class=ic aria-label="Видалити" onclick="delNote()">🗑</button></header><input id=nt class=nt placeholder="Заголовок" value="${esc(n.t)}"><textarea id=nc class=nc placeholder="Почніть писати…">${esc(n.c)}</textarea>`;
+ A.innerHTML=`<header class=top><button class=back onclick="back()">‹ Back</button><span id=ss class=ss>Saved</span><button class=pill onclick="sv()">Save</button><button class=ic aria-label="Delete" onclick="delNote()">🗑</button></header><input id=nt class=nt placeholder="Title" value="${esc(n.t)}"><textarea id=nc class=nc placeholder="Start writing...">${esc(n.c)}</textarea>`;
 
  const au=()=>{
-  $('#ss').textContent='…';
+  $('#ss').textContent='Saving...';
   clearTimeout(tm);tm=setTimeout(sv,400);grow();
  };
 
@@ -420,7 +420,7 @@ function noteView(A){
 }
 
 function delNote(){
- if(!confirm('Видалити нотатку? Це не можна скасувати.'))return;
+ if(!confirm('Delete this note? This action cannot be undone.'))return;
  clearTimeout(tm);
  db.items=db.items.filter(i=>i.id!=st.note);
  save();st.note=null;render();
@@ -432,7 +432,7 @@ document.addEventListener('visibilitychange',()=>document.hidden&&sv());
 /* backup */
 
 function settings(){
- sheet(`<h2>Налаштування</h2><button class=opt id=ex><span>⇪</span>Експортувати резервну копію</button><button class=opt id=im><span>⇩</span>Імпортувати з файлу</button><input type=file id=fi accept=".json,application/json" hidden><p class=hint>Дані зберігаються лише на цьому пристрої. Час від часу робіть резервну копію.</p>`);
+ sheet(`<h2>Settings</h2><button class=opt id=ex><span>⇪</span>Export backup</button><button class=opt id=im><span>⇩</span>Import from file</button><input type=file id=fi accept=".json,application/json" hidden><p class=hint>Your data is stored only on this device. Remember to create backups from time to time.</p>`);
  $('#ex').onclick=exp;
  $('#im').onclick=()=>$('#fi').click();
  $('#fi').onchange=imp;
@@ -460,11 +460,11 @@ function imp(e){
    d=JSON.parse(r.result);
    if(![d.cols,d.subs,d.items].every(Array.isArray)||d.cols.some(c=>!c.id||!c.name)||d.subs.some(s=>!s.id||!s.col)||d.items.some(i=>!i.id||!i.col||!['word','phrase','note'].includes(i.type)))throw 0;
   }catch(x){
-   alert('Файл не схожий на резервну копію My English.');
+   alert('This file does not look like a My English backup.');
    return;
   }
 
-  if(!confirm(`Замінити поточні дані даними з файлу? Колекцій у файлі: ${d.cols.length}.`))return;
+  if(!confirm(`Replace your current data with the data from this file? Collections in the file: ${d.cols.length}.`))return;
   db=d;save();close();go();
  };
  r.readAsText(f);
