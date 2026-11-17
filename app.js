@@ -98,10 +98,14 @@ function form(title,F,v,ok,del){
   </div>
  </div>`;
 
- sheet(`<h2>${title}</h2><div class=fields>${h}
-  <button type=button class=btn id=save-form>Зберегти</button>
-  ${del?'<button type=button class="btn ghost danger" id=del>Видалити</button>':''}
- </div>${emojiScreen}`,title.toLowerCase().includes('фраз')?'phrase-sheet':'');
+ const aiType = F.some(f=>f.k==='ipa') ? 'word' :
+               F.some(f=>f.k==='n') ? 'phrase' : null;
+
+  sheet(`<h2>${title}</h2><div class=fields>${h}
+   ${aiType ? '<button type=button class="btn ghost" id=ai-fill>✨ Заповнити за допомогою ШІ</button>' : ''}
+   <button type=button class=btn id=save-form>Зберегти</button>
+   ${del?'<button type=button class="btn ghost danger" id=del>Видалити</button>':''}
+  </div>${emojiScreen}`,title.toLowerCase().includes('фраз')?'phrase-sheet':'');
 
  const sh=$('.sh');
  const fm=sh.querySelector('.fields');
@@ -145,7 +149,49 @@ function form(title,F,v,ok,del){
   fm.hidden=false;
  };
 
- $('#save-form').onclick=()=>{
+   if(aiType){
+   $('#ai-fill').onclick=async()=>{
+    const button=$('#ai-fill');
+    const input=fm.querySelector('[name="t"]');
+    const word=input.value.trim();
+
+    if(!word){
+     input.focus();
+     return;
+    }
+
+    button.disabled=true;
+    button.textContent='✨ Генерую...';
+
+    try{
+     const response=await fetch('/.netlify/functions/ai',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:aiType,text:word})
+     });
+
+     const data=await response.json();
+     if(!response.ok)throw new Error(data.error||'Помилка');
+
+     const set=(name,value)=>{
+      const field=fm.querySelector(`[name="${name}"]`);
+      if(field&&value)field.value=value;
+     };
+
+     set('m',data.translation);
+     if(aiType==='word'){
+      set('ipa',data.ipa);
+      set('ex',data.example);
+      set('et',data.exampleTranslation);
+     }
+    }catch(error){
+     alert(error.message||'Не вдалося отримати відповідь від ШІ');
+    }finally{
+     button.disabled=false;
+     button.textContent='✨ Заповнити за допомогою ШІ';
+    }
+   };
+  }
   const d={};
 
   F.forEach(f=>{
