@@ -243,6 +243,7 @@ function colView(A){const c=db.cols.find(x=>x.id==st.col);if(!c)return go();
 ${subs.length?'<div class=sec>Підкатегорії</div>'+subs.map(s=>`<div class=sub onclick="go('${c.id}','${s.id}')"><div class=sx><b>${esc(s.name)}</b><small>Записів: ${cnt(c.id,s.id)}</small></div><button class=dots onclick="event.stopPropagation();subForm('${s.id}')">⋯</button><i>›</i></div>`).join(''):''}
 ${its.length?'<div class=sec>Записи</div>'+its.map(card).join(''):''}
 ${subs.length||its.length?'':empty('🌿','Тут поки порожньо','Натисніть +, щоб додати слово, фразу, нотатку чи підкатегорію.')}`}
+}
 /* notes */
 function newNote(){const n=Date.now(),o={id:uid(),type:'note',col:st.col,sub:st.sub||null,t:'',c:'',createdAt:n,updatedAt:n};db.items.push(o);st.note=o.id;scrollTo(0,0);render()}
 function sv(){clearTimeout(tm);const n=db.items.find(i=>i.id==st.note),t=$('#nt');if(!n||!t)return;n.t=t.value;n.c=$('#nc').value;n.updatedAt=Date.now();save();$('#ss').textContent='Збережено'}
