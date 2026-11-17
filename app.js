@@ -17,26 +17,6 @@ function back(){if(st.note){sv();const n=db.items.find(i=>i.id==st.note);if(n&&!
  else if(st.sub){const s=db.subs.find(x=>x.id==st.sub);st.sub=s&&s.parentId||null}else st.col=null;scrollTo(0,0);render()}
 /* sheets & forms */
 
-let viewportHandler=null;
-
-function sheet(h){
- close();
- const o=document.createElement('div');
- o.className='ov';
- o.innerHTML='<div class=sh><i class=grab></i>'+h+'</div>';
- o.onclick=e=>{if(e.target==o)close()};
- document.body.appendChild(o);
-}
-
- const resize=()=>{
-  const v=window.visualViewport;
-  if(!v)return;
-  o.style.top=v.offsetTop+'px';
-  o.style.height=v.height+'px';
- };
-
- resize/* sheets & forms */
-
 function sheet(h,extraClass=''){
  close();
 
