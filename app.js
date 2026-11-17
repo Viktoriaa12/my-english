@@ -26,6 +26,7 @@ function sheet(h){
  o.innerHTML='<div class=sh><i class=grab></i>'+h+'</div>';
  o.onclick=e=>{if(e.target==o)close()};
  document.body.appendChild(o);
+}
 
  const resize=()=>{
   const v=window.visualViewport;
