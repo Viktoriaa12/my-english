@@ -16,36 +16,155 @@ function render(){const A=$('#app');$('.fab').style.display=st.note?'none':'';st
 function back(){if(st.note){sv();const n=db.items.find(i=>i.id==st.note);if(n&&!n.t.trim()&&!n.c.trim()){db.items=db.items.filter(i=>i!=n);save()}st.note=null}
  else if(st.sub){const s=db.subs.find(x=>x.id==st.sub);st.sub=s&&s.parentId||null}else st.col=null;scrollTo(0,0);render()}
 /* sheets & forms */
-function sheet(h){close();const o=document.createElement('div');o.className='ov';o.innerHTML='<div class=sh><i class=grab></i>'+h+'</div>';o.onclick=e=>{if(e.target==o)close()};document.body.appendChild(o)}
-function close(){document.querySelectorAll('.ov').forEach(o=>o.remove())}
+
+let viewportHandler=null;
+
+function sheet(h,extraClass=''){
+ close();
+ const o=document.createElement('div');
+ o.className='ov';
+ o.innerHTML=`<div class="sh ${extraClass}"><i class=grab></i>${h}</div>`;
+ o.onclick=e=>{if(e.target===o)close()};
+ document.body.appendChild(o);
+
+ const sh=o.querySelector('.sh');
+ const vv=window.visualViewport;
+
+ const adjust=()=>{
+  if(!vv)return;
+  const keyboardOpen=window.innerHeight-vv.height-vv.offsetTop>100;
+  if(keyboardOpen){
+   o.style.top=vv.offsetTop+'px';
+   o.style.height=vv.height+'px';
+   o.style.bottom='auto';
+   o.classList.add('keyboard-open');
+  }else{
+   o.style.top='0';
+   o.style.height='100%';
+   o.style.bottom='auto';
+   o.classList.remove('keyboard-open');
+  }
+ };
+
+ if(vv){
+  viewportHandler=adjust;
+  vv.addEventListener('resize',viewportHandler);
+  vv.addEventListener('scroll',viewportHandler);
+  adjust();
+ }
+}
+
+function close(){
+ document.querySelectorAll('.ov').forEach(o=>o.remove());
+ if(window.visualViewport&&viewportHandler){
+  window.visualViewport.removeEventListener('resize',viewportHandler);
+  window.visualViewport.removeEventListener('scroll',viewportHandler);
+ }
+ viewportHandler=null;
+}
+
+
 
 function form(title,F,v,ok,del){
- const h=F.map(f=>{const x=v[f.k]!=null?v[f.k]:(f.d||'');
-  if(f.t=='icons'||f.t=='cols')return `<div class=lb>${f.l}</div><div class="pick ${f.t}" data-k="${f.k}">${f.o.map(o=>`<button type=button data-v="${esc(o)}" class="${o==x?'sel':''}" ${f.t=='cols'?`style="background:${o}"`:''}>${f.t=='icons'?o:''}</button>`).join('')}</div><input type=hidden name="${f.k}" value="${esc(x)}">`;
-  return `<label class=lb>${f.l}${f.req?'':' <em>(необов’язково)</em>'}${f.t=='area'?`<textarea name="${f.k}" rows=3>${esc(x)}</textarea>`:`<input type="text" name="${f.k==='name'?'entry-title':f.k}" value="${esc(x)}" ${f.req?'required':''} autocomplete="off" autocorrect="on" autocapitalize="words" spellcheck="true" inputmode="text">`}</label>`}).join('');
+ const h=F.map(f=>{
+  const x=v[f.k]!=null?v[f.k]:(f.d||'');
 
- sheet(`<h2>${title}</h2><div class="fields">${h}<button type="button" class="btn" id="save-form">Зберегти</button>${del?'<button type=button class="btn ghost danger" id=del>Видалити</button>':''}</div>`);
+  if(f.t==='icons'){
+   return `<div class=lb>${f.l}</div>
+   <div class=icon-choice>
+    <button type=button class=emoji-trigger>
+     <span class=chosen-emoji>${esc(x)}</span>
+     <span>Обрати іконку</span>
+     <span class=emoji-arrow>›</span>
+    </button>
+   </div>
+   <input type=hidden name="${f.k}" value="${esc(x)}">`;
+  }
 
- const fm=$('.sh .fields');
+  if(f.t==='cols'){
+   return `<div class=lb>${f.l}</div>
+   <div class="pick cols" data-k="${f.k}">
+    ${f.o.map(o=>`<button type=button data-v="${esc(o)}" class="${o===x?'sel':''}" style="background:${o}"></button>`).join('')}
+   </div>
+   <input type=hidden name="${f.k}" value="${esc(x)}">`;
+  }
+
+  return `<label class=lb>${f.l}${f.req?'':' <em>(необов’язково)</em>'}
+   ${f.t==='area'
+    ?`<textarea name="${f.k}" rows=3>${esc(x)}</textarea>`
+    :`<input type=text name="${f.k==='name'?'entry-title':f.k}" value="${esc(x)}" ${f.req?'required':''} autocomplete=off autocorrect=on autocapitalize=words spellcheck=true inputmode=text>`}
+  </label>`;
+ }).join('');
+
+ const emojiScreen=`
+ <div class=emoji-screen hidden>
+  <div class=emoji-head>
+   <button type=button class=emoji-back>‹ Назад</button>
+   <b>Обрати іконку</b>
+  </div>
+  <div class=emoji-grid>
+   ${ICONS.map(o=>`<button type=button class=emoji-option data-emoji="${esc(o)}">${o}</button>`).join('')}
+  </div>
+ </div>`;
+
+ sheet(`<h2>${title}</h2><div class=fields>${h}
+  <button type=button class=btn id=save-form>Зберегти</button>
+  ${del?'<button type=button class="btn ghost danger" id=del>Видалити</button>':''}
+ </div>${emojiScreen}`,title.toLowerCase().includes('фраз')?'phrase-sheet':'');
+
+ const sh=$('.sh');
+ const fm=sh.querySelector('.fields');
+ const ep=sh.querySelector('.emoji-screen');
 
  fm.onclick=e=>{
-  const b=e.target.closest('.pick button');
+  const emoji=e.target.closest('.emoji-trigger');
+  if(emoji){
+   fm.hidden=true;
+   ep.hidden=false;
+   return;
+  }
+
+  const b=e.target.closest('.pick.cols button');
   if(!b)return;
+
   const p=b.parentNode;
   p.querySelectorAll('button').forEach(z=>z.classList.remove('sel'));
   b.classList.add('sel');
+
   const input=fm.querySelector(`[name="${p.dataset.k}"]`);
   if(input)input.value=b.dataset.v;
  };
 
+ ep.onclick=e=>{
+  if(e.target.closest('.emoji-back')){
+   ep.hidden=true;
+   fm.hidden=false;
+   return;
+  }
+
+  const b=e.target.closest('.emoji-option');
+  if(!b)return;
+
+  const input=fm.querySelector('[name="icon"]');
+  if(input)input.value=b.dataset.emoji;
+
+  fm.querySelector('.chosen-emoji').textContent=b.dataset.emoji;
+
+  ep.hidden=true;
+  fm.hidden=false;
+ };
+
  $('#save-form').onclick=()=>{
   const d={};
+
   F.forEach(f=>{
    const key=f.k==='name'?'entry-title':f.k;
    const input=fm.querySelector(`[name="${key}"]`);
    d[f.k]=input?input.value.trim():'';
   });
+
   if(F.some(f=>f.req&&!d[f.k]))return;
+
   ok(d);
   save();
   close();
@@ -61,6 +180,7 @@ function form(title,F,v,ok,del){
   }
  };
 }
+
 
 function colForm(id){const c=id&&db.cols.find(x=>x.id==id);
  form(c?'Редагувати колекцію':'Нова колекція',[{k:'name',l:'Назва',req:1},{k:'icon',l:'Іконка',t:'icons',o:ICONS,d:'✧'},{k:'color',l:'Колір',t:'cols',o:COLS,d:COLS[0]}],c||{},
