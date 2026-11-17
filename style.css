@@ -53,4 +53,106 @@ input,textarea{width:100%;font-size:16px;border:1px solid var(--ln);background:v
 .ghost{background:transparent;color:var(--tx);border:1px solid var(--ln);margin-top:8px}.danger{color:#A5584F}
 .hint{color:var(--mu);font-size:13px}
 .nt{border:0;background:transparent;font:700 28px/1.2 var(--sr);padding:6px 0;margin:0 0 4px}
+
+/* Адаптація вікон до клавіатури */
+.ov{
+ align-items:flex-end;
+}
+
+.sh{
+ width:100%;
+ max-height:90%;
+ max-height:90dvh;
+ overflow-y:auto;
+ overscroll-behavior:contain;
+}
+
+/* Вікно додавання фрази */
+.sh.phrase-sheet{
+ max-height:85%;
+ max-height:85dvh;
+}
+
+/* Кнопка вибору іконки */
+.icon-choice{
+ margin:7px 0 5px;
+}
+
+.emoji-trigger{
+ display:flex;
+ align-items:center;
+ gap:12px;
+ width:100%;
+ min-height:58px;
+ padding:7px 13px;
+ border:1px solid var(--ln);
+ border-radius:15px;
+ background:var(--bg);
+ text-align:left;
+ font-size:14px;
+}
+
+.chosen-emoji{
+ display:grid;
+ place-items:center;
+ width:42px;
+ height:42px;
+ border-radius:12px;
+ background:var(--sg);
+ font-size:25px;
+}
+
+.emoji-arrow{
+ margin-left:auto;
+ color:var(--mu);
+ font-size:25px;
+}
+
+/* Окрема панель емодзі */
+.emoji-screen[hidden],
+.fields[hidden]{
+ display:none;
+}
+
+.emoji-head{
+ display:flex;
+ align-items:center;
+ gap:15px;
+ margin:4px 0 18px;
+}
+
+.emoji-head b{
+ font:700 19px var(--sr);
+}
+
+.emoji-back{
+ border:0;
+ background:var(--bg);
+ border-radius:12px;
+ padding:9px 13px;
+ font-size:15px;
+}
+
+.emoji-grid{
+ display:grid;
+ grid-template-columns:repeat(5,1fr);
+ gap:10px;
+ padding-bottom:12px;
+}
+
+.emoji-option{
+ display:grid;
+ place-items:center;
+ aspect-ratio:1;
+ border:1px solid var(--ln);
+ border-radius:15px;
+ background:var(--bg);
+ font-size:26px;
+}
+
+.emoji-option:active,
+.emoji-trigger:active{
+ opacity:.65;
+}
+
 .nc{border:0;background:transparent;font-size:18px;line-height:1.7;padding:6px 0;margin:0;resize:none;overflow:hidden;display:block}
