@@ -169,7 +169,6 @@ function form(title,F,v,ok,del){
     }finally{
      button.disabled=false;
      button.textContent='✨ Заповнити за допомогою ШІ';
-    }
    };
   }
 
