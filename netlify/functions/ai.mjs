@@ -1,7 +1,24 @@
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "https://viktoriaa12.github.io",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS"
+};
+
 export default async (request) => {
+  // Дозволяємо браузеру виконати попередню перевірку
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
+    });
+  }
+
   if (request.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response("Method not allowed", {
+      status: 405,
+      headers: corsHeaders
+    });
   }
 
   try {
@@ -13,7 +30,7 @@ export default async (request) => {
         text.length > 200) {
       return Response.json(
         { error: "Некоректний запит" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -70,14 +87,16 @@ export default async (request) => {
 
     const data = JSON.parse(clean);
 
-    return Response.json(data);
+    return Response.json(data, {
+      headers: corsHeaders
+    });
 
   } catch (error) {
     console.error("AI function error:", error);
 
     return Response.json(
       { error: "Не вдалося отримати відповідь від ШІ. Спробуй ще раз." },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 };
